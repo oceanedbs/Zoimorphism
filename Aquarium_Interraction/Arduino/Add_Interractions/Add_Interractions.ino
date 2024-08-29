@@ -39,6 +39,8 @@ bool dirX = 0;
 // dirY: 1 for increase Y, 0 for decrease Y
 bool dirY = 0;  
 
+bool stopMovement = false;
+
 // Variables to store the maximum number of steps between 0 and max position for each direction
 int stepNumberMotorHorizontal = 0;  // Max steps for horizontal movement
 int stepNumberMotordirectionY = 0;  // Max steps for vertical movement
@@ -69,15 +71,15 @@ void setup() {
   digitalWrite(dirPin3, HIGH);
 
   // Calibrate direction Y and horizontal axis by moving motors to zero position
-  setMotorToZero(true);  // Calibrate Y direction
-  stepNumberMotordirectionY = motorCalibration(true);  // Get max steps for Y direction
-  Serial.print("Number of steps directionY :");
-  Serial.println(stepNumberMotordirectionY);
-
-  setMotorToZero(false);  // Calibrate X direction
-  stepNumberMotorHorizontal = motorCalibration(false);  // Get max steps for X direction
-  Serial.print("Number of steps horizontal :");
-  Serial.println(stepNumberMotorHorizontal);
+//  setMotorToZero(true);  // Calibrate Y direction
+//  stepNumberMotordirectionY = motorCalibration(true);  // Get max steps for Y direction
+//  Serial.print("Number of steps directionY :");
+//  Serial.println(stepNumberMotordirectionY);
+//
+//  setMotorToZero(false);  // Calibrate X direction
+//  stepNumberMotorHorizontal = motorCalibration(false);  // Get max steps for X direction
+//  Serial.print("Number of steps horizontal :");
+//  Serial.println(stepNumberMotorHorizontal);
 }
 
 
@@ -93,8 +95,8 @@ void loop() {
   readInputData();  // Process any input from serial communication
 
   // Move each motor
-  goMotor(stepPin1);
-  goMotor(stepPin2);
+  //goMotor(stepPin1);
+  //goMotor(stepPin2);
   goMotor(stepPin3);
 
   // Check if any limit switch is pressed and change motor direction accordingly
@@ -120,8 +122,8 @@ void loop() {
   }
 
   // Call random event functions
-  aleaTime();
-  aleaSpeed();
+//  aleaTime();
+//  aleaSpeed();
   aleaSpin();
 }
 
@@ -154,7 +156,7 @@ void aleaTime() {
 }
 // Function to randomly change speed of stepper motors
 void aleaSpeed() {
-  int s = random(500, 1000);  // Generate random speed between 500 and 1000 microseconds
+  int s = random(200, 1000);  // Generate random speed between 500 and 1000 microseconds
   if (speedTimer.isReady()) {  // If timer is ready
     stepDelay = s;  // Update the speed
     speedTimer.reset();  // Reset the timer
@@ -169,7 +171,7 @@ void setSpeedTimer(int s) {
   }
 }
 
-// Function to randomly change spin direction of magnetic base
+// Function to choose randomly spin direction of magnetic base
 void setSpin(int d) {
   d = d % 2;  // Convert to 0 or 1
   if (spinTimer.isReady() && d > 0) {  // If timer is ready and random number is 1
@@ -186,6 +188,8 @@ void aleaSpin() {
     digitalWrite(dirPin3, random(0, 2));  // Randomize spin direction
     spinTimer.reset();  // Reset the timer
   }
+  stepDelay = random(150,800);  // Update the speed
+
 }
 
 void setMotorToZero(bool directionY) {
@@ -280,10 +284,10 @@ void readInputData() {
   if (Serial.available()) {
     String receivedString = "";  // Temporary string to hold received data
     receivedString = Serial.readStringUntil('\r\n');  // Read data until newline
-
+    Serial.println(receivedString);
     // Convert received string to character buffer
     char buf[sizeof(receivedString)];
-    receivedString.toCharArray(buf, sizeof(buf));
+    receivedString.toCharArray(buf, sizeof(buf)+10);
     char *p = buf;
     char *str;
     int i = 0;
@@ -308,7 +312,7 @@ void readInputData() {
 
 void calibration() {
   Serial.println("Calibration");
-  setSpeedTimer(500);  // Set speed for calibration
+  setSpeedTimer(200);  // Set speed for calibration
   goToZero();  // Move to zero position
 
   // Calculate number of steps needed for calibration on each axis
@@ -318,8 +322,8 @@ void calibration() {
   Serial.println(stepdirectionY);
 
   // Move to the calculated positions
-  goToPosition(true, stepdirectionY);
-  goToPosition(false, stepDirectionX);
+  goToPosition(true, 1,  stepdirectionY);
+  goToPosition(false, 1, stepDirectionX);
 }
 void goToZero() {
   setDirY(0);  // Set initial direction to move towards zero position on Y-axis
@@ -354,12 +358,22 @@ void goToZero() {
   }
 }
 
-void goToPosition(bool directionY, int stepNumber) {
+void goToPosition(bool directionY, bool positive,  int stepNumber) {
   // Set the direction based on the Y or X axis
   if (directionY) {
-    setDirY(true);
+    if(positive){
+          setDirY(true);
+    }
+    else{
+          setDirY(false);
+    }
   } else {
-    setDirX(true);
+    if(positive){
+          setDirX(true);
+    }
+    else{
+      setDirX(false);
+    }
   }
 
   // Update endstop states
@@ -378,6 +392,7 @@ void goToPosition(bool directionY, int stepNumber) {
 
     goMotor(stepPin1);
     goMotor(stepPin2);
+    goMotor(stepPin3);
 
     // Check if any endstop is pressed during movement
     if (directionY) {
@@ -411,11 +426,14 @@ void goToPosition(bool directionY, int stepNumber) {
 
 end:
   Serial.println("Position reached");  // Print message when position is reached
+  // save current dir and while current dir == old dir stop
 }
 
 void setDirX(int dir) {
   // Set the direction of movement for X-axis motors
-  if (dir) {
+    Serial.println("Set X dir");
+  Serial.println(dir);
+  if (dir==1) {
     digitalWrite(dirPin1, 1);
     digitalWrite(dirPin2, 0);
     dirX = 1;  // Update X direction state
@@ -430,7 +448,8 @@ void setDirX(int dir) {
 
 void setDirY(int dir) {
   // Set the direction of movement for Y-axis motors
-  if (dir) {
+
+  if (dir==1) {
     digitalWrite(dirPin1, 1);
     digitalWrite(dirPin2, 1);
     dirY = 1;  // Update Y direction state
@@ -447,38 +466,73 @@ void interractions() {
 
   // Retrieve position and speed values from the input string
   // destX: Target position for X axis
-  // speedX: Speed for X axis
   // destY: Target position for Y axis
-  // speedY: Speed for Y axis
-  int destX = outputString[1].toInt();
-  int speedX = outputString[2].toInt();
-  int destY = outputString[3].toInt();
-  int speedY = outputString[4].toInt();
+  // speedMotor: Speed for Y axis
+  String dirXTarget = outputString[1];
+  int destX = outputString[2].toInt();
+  String dirYTarget = outputString[3];
+  int destY = outputString[4].toInt();
+  String speedMotor = outputString[5];
+  bool directionToGo;
+
+  Serial.print("Pos X");
+  Serial.print(destX);
+  Serial.println();
+  Serial.print("Pos Y");
+  Serial.print(destY);
+  Serial.println();
+  Serial.print("Speed");
+  Serial.print(speedMotor);
+  Serial.println();
   
   // Determine the direction to move along the X axis
-  if (posX < 0) {
+  if (dirXTarget == "M") {
     setDirX(0);  // Set direction to negative
+    Serial.println("Negative X direction");
+    directionToGo = 0;
   } else {
     setDirX(1);  // Set direction to positive
+    Serial.println("Positive X direction");
+    directionToGo = 1;
+
   }
   
-  // Set motor speed for X axis and move to the target position
-  setSpeedTimer(speedX);
-  goToPosition(false, abs(destX));  // 'false' indicates movement along X axis
+  // Set motor speed 
+  if(speedMotor=="L"){
+    setSpeedTimer(700);
+  }
+  if(speedMotor=="M"){
+    setSpeedTimer(400);
+  }
+  if(speedMotor =="V"){
+     setSpeedTimer(150);
+  }
+  // Set X axis
+  goToPosition(false, directionToGo, abs(destX));  // 'false' indicates movement along X axis
 
   // Determine the direction to move along the Y axis
-  if (posY < 0) {
+  if (dirYTarget == "M") {
     setDirY(0);  // Set direction to negative
+    Serial.println("Negative Y direction");
+        directionToGo = 0;
+
+
   } else {
     setDirY(1);  // Set direction to positive
+    Serial.println("Negative Y direction");
+    directionToGo = 1;
+
   }
 
-  // Set motor speed for Y axis and move to the target position
-  setSpeedTimer(speedY);
-  goToPosition(false, abs(destY));  // 'false' indicates movement along Y axis
+  // Set Y axis
+  goToPosition(true, directionToGo, abs(destY));  // 'false' indicates movement along Y axis
+  stepDelay = random(150,800);  // Update the speed
+  aleaSpin();
+  goMotor(stepPin3);
 
   aleaSpin();  // Execute a random spin operation (potentially a unique action)
   Serial.println("End Interraction");  // Indicate that the interaction process has ended
+  Serial.flush();
 }
 
 void updatePosition() {

@@ -21,7 +21,7 @@ SimpleTimer speedTimer(8000);
 SimpleTimer spinTimer(5000);
 
 //Vitesse de base des steppers
-int stepDelay = 200;
+int stepDelay = 700;
 
 //Variables to store the maximum of steps between the 0 and max position for each motor
 int stepNumberMotor1 = 0;
