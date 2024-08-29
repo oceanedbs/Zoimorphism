@@ -122,9 +122,9 @@ void loop() {
   }
 
   // Call random event functions
-//  aleaTime();
-//  aleaSpeed();
-  aleaSpin();
+   aleaTime();
+   aleaSpeed();
+   aleaSpin();
 }
 
 // Function to move a stepper motor one step
@@ -156,7 +156,7 @@ void aleaTime() {
 }
 // Function to randomly change speed of stepper motors
 void aleaSpeed() {
-  int s = random(200, 1000);  // Generate random speed between 500 and 1000 microseconds
+  int s = random(400, 1000);  // Generate random speed between 500 and 1000 microseconds
   if (speedTimer.isReady()) {  // If timer is ready
     stepDelay = s;  // Update the speed
     speedTimer.reset();  // Reset the timer
@@ -188,7 +188,7 @@ void aleaSpin() {
     digitalWrite(dirPin3, random(0, 2));  // Randomize spin direction
     spinTimer.reset();  // Reset the timer
   }
-  stepDelay = random(150,800);  // Update the speed
+  //stepDelay = random(150,800);  // Update the speed
 
 }
 
@@ -282,12 +282,13 @@ int motorCalibration(bool directionY) {
 void readInputData() {
   // Check if there is any incoming serial data
   if (Serial.available()) {
+
     String receivedString = "";  // Temporary string to hold received data
     receivedString = Serial.readStringUntil('\r\n');  // Read data until newline
     Serial.println(receivedString);
     // Convert received string to character buffer
-    char buf[sizeof(receivedString)];
-    receivedString.toCharArray(buf, sizeof(buf)+10);
+    char buf[sizeof(receivedString)+1000];
+    receivedString.toCharArray(buf, sizeof(buf)+1000);
     char *p = buf;
     char *str;
     int i = 0;
@@ -308,6 +309,7 @@ void readInputData() {
       interractions();
     }
   }
+ // goMotor(stepPin3);
 }
 
 void calibration() {
@@ -526,11 +528,7 @@ void interractions() {
 
   // Set Y axis
   goToPosition(true, directionToGo, abs(destY));  // 'false' indicates movement along Y axis
-  stepDelay = random(150,800);  // Update the speed
-  aleaSpin();
-  goMotor(stepPin3);
-
-  aleaSpin();  // Execute a random spin operation (potentially a unique action)
+  
   Serial.println("End Interraction");  // Indicate that the interaction process has ended
   Serial.flush();
 }
