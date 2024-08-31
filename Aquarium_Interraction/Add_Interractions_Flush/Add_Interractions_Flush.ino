@@ -48,6 +48,8 @@ int stepNumberMotordirectionY = 0;  // Max steps for vertical movement
 // Output string array to store incoming serial commands
 String outputString[10];
 
+bool isMoving = false;
+
 void setup() {
   Serial.begin(9600);  // Initialize serial communication at 9600 baud rate
 
@@ -93,6 +95,7 @@ void loop() {
   limitSwitch4.loop();
 
   readInputData();  // Process any input from serial communication
+  processInputData();
 
   // Move each motor
   //goMotor(stepPin1);
@@ -296,22 +299,26 @@ void readInputData() {
 
     // Split the received data using commas as delimiters
     while ((str = strtok_r(p, ",", &p)) != NULL) {
-      Serial.println(str);  // Print each split segment
+      //Serial.println(str);  // Print each split segment
       outputString[i] = str;  // Store in outputString array
       i++;
     }
     Serial.println(outputString[0]);
- 
+  }
+}
+
+void processInputData(){
     // Check the first command character and call the appropriate function
     if (outputString[0] == "C") {
       calibration();
     }
+    if(isMoving == false){
     if (outputString[0] == "I") {
       interractions();
+      }
     }
   }
- // goMotor(stepPin3);
-}
+
 
 void calibration() {
   Serial.println("Calibration");
@@ -362,6 +369,7 @@ void goToZero() {
 }
 
 void goToPosition(bool directionY, bool positive,  int stepNumber) {
+  isMoving = true;
   // Set the direction based on the Y or X axis
   if (directionY) {
     if(positive){
@@ -387,6 +395,7 @@ void goToPosition(bool directionY, bool positive,  int stepNumber) {
 
   // Loop to move the motor to the desired position
   for (int x = 0; x < stepNumber; x++) {
+    readInputData();
     // Update endstop states
     limitSwitch1.loop();
     limitSwitch2.loop();
@@ -429,6 +438,7 @@ void goToPosition(bool directionY, bool positive,  int stepNumber) {
 
 end:
   Serial.println("Position reached");  // Print message when position is reached
+  isMoving = false;
   // save current dir and while current dir == old dir stop
 }
 
