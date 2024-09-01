@@ -126,7 +126,7 @@ void moveAway(int stepDelay, int stepPin) {
 //}
 
 void aleaSpeed1() {
-  int s1 = random(400, 1500);
+  int s1 = random(300, 800);
   if (speedTimer1.isReady()) {
     stepDelay1 = s1;
     speedTimer1.reset();
@@ -134,7 +134,7 @@ void aleaSpeed1() {
 }
 
 void aleaSpeed2() {
-  int s2 = random(400, 1500);
+  int s2 = random(300, 800);
   if (speedTimer2.isReady()) {
     stepDelay2 = s2;
     speedTimer2.reset();
