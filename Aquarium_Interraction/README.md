@@ -10,4 +10,7 @@ This projects works with Raspberry 4 and previous version. For now, it can't wor
 
 This project uses an Arduino Giga R1, A Webcam (whathever camera you like), a Rasberry Pi 4, and 2 Stepmotors. 
 
-TO DO : Update schema
+## Technical Informations
+Here are the set-up with the name of the different components as they are then used in the code.
+
+![Project Technical Info](Doc/project_legend.png "Title")

@@ -23,6 +23,7 @@ Sorry, not all programs are well commented ...
 **4_test_calibration** : test programme for the calibration of motors, the motors goes all the way to one stop and then counts the number of step up to the other stop
 **5_Motor_and_Input_String** : Add the possibility to receive string and decode them via the serial port
 **6_Add_Interractions** : Add the possibility to interract physically with the aquarium
+**7_Add_Interractions_Flush** : Add the possibility to interract physically with the aquarium and ass a flush at the end of each interraction to smooth the interraction and limit the delay between interactions
 
 
 ## Configurations
